@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unit 8: Weather report</title>
+<style>
+:root{--bg1:#ffe3f3;--bg2:#e9d5ff;--card:#ffffff;--ink:#4a1d6b;--soft:#7a4a9a;--pink:#ff4fa3;--purple:#9b4dff;--line:#f3c4e4;--ok:#22b573;--bad:#ff5d7a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#2b0f3f;--bg2:#3d1a6b;--card:#42205f;--ink:#fde7f6;--soft:#e2c4f5;--line:#6b3a92}}
+:root[data-theme="dark"]{--bg1:#2b0f3f;--bg2:#3d1a6b;--card:#42205f;--ink:#fde7f6;--soft:#e2c4f5;--line:#6b3a92}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2));background-attachment:fixed;min-height:100vh;overflow-x:hidden}
+.float{position:fixed;font-size:32px;opacity:.55;pointer-events:none;animation:fl 9s ease-in-out infinite;z-index:0}
+@keyframes fl{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-28px) rotate(12deg)}}
+header{position:relative;z-index:1;text-align:center;padding:22px 14px 6px}
+h1{margin:0;font-size:clamp(28px,6vw,48px);background:linear-gradient(90deg,var(--pink),var(--purple),var(--pink));background-size:200%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 4s linear infinite}
+@keyframes sh{to{background-position:200% 0}}
+.sub{color:var(--soft);font-weight:700;margin:4px 0 0}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px;background:color-mix(in srgb,var(--bg1) 85%,transparent);backdrop-filter:blur(8px)}
+nav button{border:0;border-radius:999px;padding:10px 16px;font:inherit;font-weight:800;color:var(--ink);background:var(--card);box-shadow:0 3px 0 var(--line);cursor:pointer;transition:.2s}
+nav button.on{background:linear-gradient(90deg,var(--pink),var(--purple));color:#fff;transform:translateY(-2px) scale(1.05)}
+main{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:14px}
+section{display:none;animation:pop .5s}
+section.on{display:block}
+@keyframes pop{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:26px;padding:20px;margin:14px 0;box-shadow:0 8px 0 var(--line),0 14px 30px rgba(155,77,255,.18)}
+h2{margin:0 0 8px;color:var(--purple)}
+p,li{font-size:18px;line-height:1.5}
+.big{font-size:22px}
+.say{cursor:pointer;border:0;font:inherit;font-weight:800;border-radius:999px;padding:8px 14px;color:#fff;background:linear-gradient(90deg,var(--pink),var(--purple));box-shadow:0 3px 0 #7a2fd0;transition:.15s}
+.say:hover{transform:scale(1.07)}
+.say:active{transform:translateY(2px);box-shadow:none}
+.say.slow{background:linear-gradient(90deg,#b36bff,#7a8bff);box-shadow:0 3px 0 #5a4fd0}
+.en{display:inline-block;background:#fff0fa;color:#8a1f6e;border:2px dashed var(--pink);border-radius:14px;padding:2px 10px;font-weight:800;cursor:pointer}
+:root[data-theme="dark"] .en{background:#5a2a7a;color:#ffd6f0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .en{background:#5a2a7a;color:#ffd6f0}}
+.en:hover{animation:wig .5s}
+@keyframes wig{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.w{background:linear-gradient(160deg,#fff,#ffe9f6);border:3px solid var(--line);border-radius:24px;padding:14px;text-align:center;cursor:pointer;transition:.25s;color:#4a1d6b}
+.w:hover{transform:translateY(-6px) rotate(-1.5deg);border-color:var(--pink)}
+.w.bounce{animation:bn .6s}
+@keyframes bn{30%{transform:scale(1.12) rotate(4deg)}60%{transform:scale(.95)}}
+.w .e{font-size:64px;display:block;animation:fl 4s ease-in-out infinite}
+.w b{font-size:28px;color:#c2188a;display:block}
+.w small{display:block;font-size:16px;color:#6b3a92}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:8px}
+.formula{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;font-size:26px;font-weight:900;margin:10px 0}
+.formula span{padding:8px 16px;border-radius:18px;color:#fff}
+.f1{background:var(--pink)}.f2{background:var(--purple)}.f3{background:#ff8a3d}
+.scene{font-size:clamp(90px,20vw,150px);text-align:center;animation:fl 3.5s ease-in-out infinite;line-height:1.1}
+.slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:56px;margin:10px 0}
+.slot{min-width:80px;min-height:50px;border-radius:16px;border:3px dashed var(--purple);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;padding:0 12px;color:var(--ink)}
+.slot.f{background:var(--purple);color:#fff;border-style:solid;animation:bn .5s}
+.blk{border:0;font:inherit;font-size:22px;font-weight:900;padding:10px 18px;border-radius:16px;color:#fff;background:var(--pink);box-shadow:0 4px 0 #c2188a;cursor:pointer}
+.blk:nth-child(even){background:var(--purple);box-shadow:0 4px 0 #6a2fd0}
+.blk:disabled{opacity:.25}
+.shake{animation:sk .4s}
+@keyframes sk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.msg{text-align:center;font-weight:900;font-size:20px;min-height:30px}
+.opts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:14px 0}
+.opt{border:3px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:900;font-size:24px;border-radius:20px;padding:12px 20px;cursor:pointer;transition:.2s}
+.opt:hover{border-color:var(--pink);transform:scale(1.06)}
+.opt.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opt.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.bar{height:18px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .5s}
+.next{border:0;font:inherit;font-weight:900;font-size:20px;padding:12px 24px;border-radius:999px;color:#fff;background:linear-gradient(90deg,#ff8a3d,var(--pink));box-shadow:0 4px 0 #c2188a;cursor:pointer}
+.t{background:var(--card);border:3px solid var(--line);border-radius:20px;padding:12px;margin:10px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.t .em{font-size:52px}
+.t.done{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,var(--card))}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:18px;padding:8px 0}
+.chk input{width:26px;height:26px;accent-color:var(--purple);flex:none}
+.cert{display:none;text-align:center;border:5px solid var(--pink);border-radius:30px;padding:22px;background:linear-gradient(135deg,#fff0fa,#efe0ff);color:#4a1d6b}
+.cert.on{display:block;animation:pop .6s}
+.cert h2{font-size:34px}
+.conf{position:fixed;top:-40px;font-size:28px;z-index:99;pointer-events:none;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}
+.hint{background:#fff7d6;color:#6b4a00;border-radius:16px;padding:10px 14px;font-weight:700;margin-top:10px}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:520px;margin:12px auto}
+.mc{aspect-ratio:1;perspective:600px;border:0;background:none;padding:0;cursor:pointer;font:inherit}
+.mi{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.mc.f .mi{transform:rotateY(180deg)}
+.mf,.mb{position:absolute;inset:0;border-radius:18px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.mb{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-size:34px;box-shadow:0 4px 0 #7a2fd0}
+.mc:hover .mb{filter:brightness(1.1)}
+.mf{transform:rotateY(180deg);background:#fff;color:#4a1d6b;border:3px solid var(--line);font-weight:900;font-size:clamp(13px,3.6vw,22px);text-align:center}
+.mf.em{font-size:clamp(30px,9vw,54px)}
+.mc.m .mf{background:var(--ok);color:#fff;border-color:var(--ok)}
+.mc.m .mi{animation:bn .6s}
+button:focus-visible{outline:4px solid #ffb703;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<span class="float" style="left:4%;top:18%">☁️</span><span class="float" style="right:5%;top:30%;animation-delay:-3s">⭐</span><span class="float" style="left:8%;top:68%;animation-delay:-5s">🌈</span><span class="float" style="right:8%;top:75%;animation-delay:-2s">☀️</span>
+<header>
+<h1>🌈 Unit 8: Weather report ☀️</h1>
+<p class="sub">¡Aprende a hablar del clima en inglés y prepárate para tu prueba de speaking! 🎤</p>
+</header>
+<nav id="nav">
+<button data-s="s0" class="on">🏠 Inicio</button><button data-s="s1">🎴 Palabras</button><button data-s="s2">🧩 Frases</button><button data-s="s3">🎮 Juego</button><button data-s="s4">🎤 Mi prueba</button>
+</nav>
+<main>
+
+<section id="s0" class="on">
+<div class="card"><h2>¡Hola, estrellita! 👋</h2>
+<p class="big">Hoy vas a aprender a describir el clima en inglés. Todo lo que está en <span class="en" data-say="Weather report">inglés</span> tiene un botón o recuadro: ¡tócalo para escucharlo! 🔊</p>
+<div class="row"><button class="say" data-say="Hello! Welcome to our weather class!">🔊 Hello!</button><button class="say slow" data-say="Hello! Welcome to our weather class!" data-rate="0.55">🐢 Más lento</button></div></div>
+<div class="card"><h2>🎯 ¿Qué pasará en tu prueba?</h2>
+<p>La profesora te mostrará <b>7 imágenes</b> del clima. Por cada imagen tendrás que decir una frase en inglés. Te evaluarán en 3 cosas:</p>
+<ol>
+<li><b>Frases correctas:</b> usar <span class="en" data-say="It was">It was…</span> (o <span class="en" data-say="There was a">There was a…</span> para el arcoíris) en las 7 imágenes, con las palabras en el orden correcto.</li>
+<li><b>Vocabulario del clima:</b> usar bien las palabras <span class="en" data-say="sunny">sunny</span>, <span class="en" data-say="cloudy">cloudy</span>, <span class="en" data-say="windy">windy</span>, <span class="en" data-say="snowing">snowing</span>, <span class="en" data-say="raining">raining</span>, <span class="en" data-say="rainbow">rainbow</span>, <span class="en" data-say="wet">wet</span> y <span class="en" data-say="dry">dry</span>.</li>
+<li><b>Hablar con confianza:</b> decir las frases con voz clara y tranquila, para que se entienda todo.</li>
+</ol>
+<div class="hint">💡 ¡No te preocupes! Vamos paso a paso: palabras → frases → juego → ensayo de tu prueba.</div></div>
+<div class="card"><h2>🗺️ Tu aventura</h2>
+<p>🎴 <b>Palabras:</b> conoce las 8 palabras y escucha cómo se dicen.<br>🧩 <b>Frases:</b> aprende a armar frases mágicas.<br>🎮 <b>Juego:</b> gana estrellas ⭐.<br>🎤 <b>Mi prueba:</b> ensaya con 8 imágenes y consigue tu diploma 🏆.</p>
+<div class="row"><button class="next" data-go="s1">¡Empezar! 🚀</button></div></div>
+</section>
+
+<section id="s1">
+<div class="card"><h2>🎴 Las 8 palabras del clima</h2>
+<p>Toca cada tarjeta para escuchar la palabra. El botón 🐢 la dice más lento. Debajo de cada una está cómo se pronuncia, escrito como suena en español.</p></div>
+<div class="grid" id="words"></div>
+<div class="card"><h2>🧠 Trucos para recordar</h2>
+<p>🌧️ <span class="en" data-say="wet">wet</span> = mojado, como cuando llueve.<br>🏜️ <span class="en" data-say="dry">dry</span> = seco, como el desierto.<br>🌈 <span class="en" data-say="rainbow">rainbow</span> = <b>rain</b> (lluvia) + <b>bow</b> (arco). ¡Un arco de lluvia!<br>🌬️ <span class="en" data-say="windy">windy</span> viene de <span class="en" data-say="wind">wind</span> (viento).</p></div>
+<div class="row"><button class="next" data-go="s2">Siguiente: Frases 🧩</button></div>
+</section>
+
+<section id="s2">
+<div class="card"><h2>🧩 Frases mágicas del clima</h2>
+<p>Para contar cómo estaba el clima (¡en pasado!) usamos esta fórmula:</p>
+<div class="formula"><span class="f1">It</span><span class="f2">was</span><span class="f3">sunny</span></div>
+<p>Significa: <b>“Estaba soleado”</b>. Cambias solo la última palabra. Escucha los ejemplos:</p>
+<div class="row">
+<button class="say" data-say="It was sunny.">🔊 It was sunny.</button>
+<button class="say" data-say="It was cloudy.">🔊 It was cloudy.</button>
+<button class="say" data-say="It was windy.">🔊 It was windy.</button>
+<button class="say" data-say="It was snowing.">🔊 It was snowing.</button>
+<button class="say" data-say="It was raining.">🔊 It was raining.</button>
+<button class="say" data-say="It was wet.">🔊 It was wet.</button>
+<button class="say" data-say="It was dry.">🔊 It was dry.</button></div></div>
+<div class="card"><h2>🌈 ¡Ojo con el arcoíris!</h2>
+<p>Para el arcoíris usamos otra fórmula, porque es una <b>cosa</b> que se ve en el cielo:</p>
+<div class="formula"><span class="f1">There</span><span class="f2">was</span><span class="f3">a</span><span class="f1">rainbow</span></div>
+<p>Significa: <b>“Había un arcoíris”</b>.</p>
+<div class="row"><button class="say" data-say="There was a rainbow.">🔊 There was a rainbow.</button><button class="say slow" data-say="There was a rainbow." data-rate="0.55">🐢 Más lento</button></div>
+<div class="hint">⚠️ El orden importa: decimos <span class="en" data-say="It was sunny">It was sunny</span>, no “sunny it was”. ¡Primero <b>It</b>, luego <b>was</b>, al final el clima!</div></div>
+<div class="card"><h2>🏗️ Arma la frase</h2>
+<p>Mira la imagen y toca las palabras <b>en el orden correcto</b>. Cuando termines, la frase se escucha sola.</p>
+<div class="scene" id="bScene"></div>
+<div class="slots" id="bSlots"></div>
+<div class="opts" id="bBlocks"></div>
+<div class="msg" id="bMsg"></div>
+<div class="row"><button class="say" id="bHear" style="display:none">🔊 Escuchar frase</button><button class="next" id="bNext" style="display:none">Otra imagen ➡️</button></div>
+<div class="bar"><i id="bBar"></i></div></div>
+</section>
+
+<section id="s3">
+<div class="card"><h2>🎮 ¡Juego de estrellas!</h2>
+<p>Son 10 preguntas. A veces verás una imagen y elegirás la palabra. Otras veces escucharás una palabra y elegirás la imagen. ¡Gana todas las estrellas! ⭐</p>
+<div class="bar"><i id="qBar"></i></div>
+<p class="msg" id="qScore">⭐ 0</p>
+<div id="qBox"></div></div>
+<div class="card"><h2>🧠 Tablero de memoria</h2>
+<p>Encuentra las parejas: cada <b>imagen</b> va con su <b>palabra en inglés</b>. Toca dos tarjetas por turno. ¡Cada vez que des vuelta una, la escucharás! 🔊</p>
+<div class="msg" id="mMsg"></div>
+<div class="mem" id="mem"></div>
+<div class="row"><button class="next" id="mRestart">Mezclar de nuevo 🔀</button></div></div>
+</section>
+
+<section id="s4">
+<div class="card"><h2>🎤 Ensaya tu prueba de speaking</h2>
+<p>Mira cada imagen, escucha el modelo y <b>di la frase en voz alta</b>. Luego toca “¡Lo dije!”. Si necesitas ayuda, toca “Pista”.</p>
+<div class="bar"><i id="tBar"></i></div><p class="msg" id="tCount">0 de 8</p></div>
+<div id="tList"></div>
+<div class="card"><h2>✅ Revisa como en la prueba</h2>
+<p>Marca cuando lo hayas logrado:</p>
+<label class="chk"><input type="checkbox" class="rub"><span>Usé <b>It was…</b> (o <b>There was a…</b> para el arcoíris) en todas las imágenes y con las palabras en el orden correcto.</span></label>
+<label class="chk"><input type="checkbox" class="rub"><span>Usé bien las palabras del clima: sunny, cloudy, windy, snowing, raining, rainbow, wet y dry.</span></label>
+<label class="chk"><input type="checkbox" class="rub"><span>Hablé con confianza, tranquila y con voz clara, para que se entendiera cada frase.</span></label>
+<div class="hint">🎧 Consejo: escucha el modelo, repítelo en voz alta 3 veces y ¡listo! Respira hondo y sonríe 😊</div></div>
+<div class="cert" id="cert"><div style="font-size:70px">🏆</div><h2>¡Diploma de Meteoróloga Estrella!</h2><p class="big">¡Lo lograste! Estás lista para tu prueba de speaking. ¡Estoy muy orgullosa de ti! 💖</p><div class="row"><button class="say" data-say="Great job! You are a weather star!">🔊 Great job!</button></div></div>
+</section>
+</main>
+
+<script>
+(function(){
+var W=[
+{w:'sunny',e:'☀️',es:'soleado',p:'sáni'},
+{w:'cloudy',e:'☁️',es:'nublado',p:'cláudi'},
+{w:'windy',e:'🌬️',es:'con viento',p:'uíndi'},
+{w:'snowing',e:'❄️',es:'nevando',p:'snóuing'},
+{w:'raining',e:'🌧️',es:'lloviendo',p:'réining'},
+{w:'rainbow',e:'🌈',es:'arcoíris',p:'réinbou'},
+{w:'wet',e:'💦',es:'mojado',p:'uet'},
+{w:'dry',e:'🏜️',es:'seco',p:'drái'}];
+var S=W.map(function(x){return x.w==='rainbow'?{e:x.e,w:x.w,t:['There','was','a','rainbow']}:{e:x.e,w:x.w,t:['It','was',x.w]};});
+function sent(s){return s.t.join(' ')+'.';}
+
+var voice=null;
+function pick(){try{var v=window.speechSynthesis.getVoices();voice=null;for(var i=0;i<v.length;i++){if(v[i].lang==='en-US'||v[i].lang==='en_US'){voice=v[i];if(/Samantha|Google US|Aria|Jenny|Female/i.test(v[i].name))break;}}}catch(e){}}
+try{if('speechSynthesis' in window){pick();window.speechSynthesis.onvoiceschanged=pick;}}catch(e){}
+function say(t,r){
+ try{
+  if(!('speechSynthesis' in window)){return;}
+  window.speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=r||0.85;u.pitch=1.1;
+  if(voice)u.voice=voice;
+  window.speechSynthesis.speak(u);
+ }catch(e){}
+}
+document.addEventListener('click',function(ev){
+ var el=ev.target.closest('[data-say]');
+ if(el){say(el.getAttribute('data-say'),parseFloat(el.getAttribute('data-rate'))||0.85);}
+ var g=ev.target.closest('[data-go]');
+ if(g){show(g.getAttribute('data-go'));}
+});
+
+function confetti(n){
+ var a=['💖','⭐','🌈','✨','💜','🎉','🦄'];
+ for(var i=0;i<(n||26);i++){(function(){
+  var s=document.createElement('span');s.className='conf';s.textContent=a[Math.floor(Math.random()*a.length)];
+  s.style.left=Math.random()*100+'vw';s.style.animationDelay=(Math.random()*0.8)+'s';
+  document.body.appendChild(s);setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},3400);
+ })();}
+}
+
+function show(id){
+ var secs=document.querySelectorAll('section');
+ for(var i=0;i<secs.length;i++){secs[i].classList.toggle('on',secs[i].id===id);}
+ var bs=document.querySelectorAll('#nav button');
+ for(var j=0;j<bs.length;j++){bs[j].classList.toggle('on',bs[j].getAttribute('data-s')===id);}
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('nav').addEventListener('click',function(e){var b=e.target.closest('button');if(b)show(b.getAttribute('data-s'));});
+
+/* Palabras */
+var wd=document.getElementById('words');
+W.forEach(function(x){
+ var d=document.createElement('div');d.className='w';d.setAttribute('data-say',x.w);
+ d.innerHTML='<span class="e">'+x.e+'</span><b>'+x.w+'</b><small>'+x.es+'</small><small>🗣️ se dice: <b style="display:inline;font-size:18px">'+x.p+'</b></small>';
+ var sl=document.createElement('button');sl.className='say slow';sl.textContent='🐢 Lento';sl.setAttribute('data-say',x.w);sl.setAttribute('data-rate','0.5');
+ var r=document.createElement('div');r.className='row';r.appendChild(sl);d.appendChild(r);
+ d.addEventListener('click',function(){d.classList.remove('bounce');void d.offsetWidth;d.classList.add('bounce');});
+ wd.appendChild(d);
+});
+
+/* Constructor de frases */
+var bi=0,bn=0,bdone=0;
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function bRender(){
+ var s=S[bi];bn=0;
+ document.getElementById('bScene').textContent=s.e;
+ document.getElementById('bMsg').textContent='';
+ document.getElementById('bHear').style.display='none';
+ document.getElementById('bNext').style.display='none';
+ var sl=document.getElementById('bSlots');sl.innerHTML='';
+ s.t.forEach(function(){var d=document.createElement('div');d.className='slot';d.textContent='?';sl.appendChild(d);});
+ var bl=document.getElementById('bBlocks');bl.innerHTML='';
+ shuffle(s.t.map(function(w,i){return {w:w,i:i};})).forEach(function(o){
+  var b=document.createElement('button');b.className='blk';b.textContent=o.w;
+  b.addEventListener('click',function(){
+   var sx=S[bi];
+   if(o.i===bn){
+    var slot=sl.children[bn];slot.textContent=o.w;slot.classList.add('f');b.disabled=true;bn++;say(o.w,0.8);
+    if(bn===sx.t.length){
+     bdone=Math.max(bdone,bi+1);
+     document.getElementById('bMsg').textContent='🎉 ¡Muy bien! Dice: '+sent(sx);
+     document.getElementById('bBar').style.width=(bdone/S.length*100)+'%';
+     document.getElementById('bHear').style.display='';document.getElementById('bHear').setAttribute('data-say',sent(sx));
+     document.getElementById('bNext').style.display='';
+     confetti(18);setTimeout(function(){say(sent(sx));},600);
+    }
+   }else{
+    b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+    document.getElementById('bMsg').textContent='🤔 Ese no va ahora. ¡Intenta otra!';
+   }
+  });
+  bl.appendChild(b);
+ });
+}
+document.getElementById('bNext').addEventListener('click',function(){bi=(bi+1)%S.length;bRender();});
+bRender();
+
+/* Juego */
+var qi=0,qs=0,qBox=document.getElementById('qBox');
+function qRender(){
+ if(qi>=10){
+  var m=qs>=9?'🏆 ¡Increíble!':qs>=6?'🌟 ¡Muy bien!':'💪 ¡Sigue practicando!';
+  qBox.innerHTML='<div class="msg" style="font-size:28px">'+m+'<br>Ganaste '+qs+' de 10 estrellas ⭐</div><div class="row"><button class="next" id="qAgain">Jugar otra vez 🔁</button></div>';
+  document.getElementById('qAgain').addEventListener('click',function(){qi=0;qs=0;document.getElementById('qScore').textContent='⭐ 0';document.getElementById('qBar').style.width='0';qRender();});
+  if(qs>=6)confetti(40);
+  return;
+ }
+ var t=W[Math.floor(Math.random()*W.length)];
+ var others=shuffle(W.filter(function(x){return x.w!==t.w;})).slice(0,2);
+ var opts=shuffle([t].concat(others));
+ var listen=qi%2===1;
+ var h='';
+ if(listen){h+='<div class="msg">👂 Escucha y elige la imagen correcta</div><div class="row"><button class="say" id="qHear">🔊 Escuchar</button></div>';}
+ else{h+='<div class="msg">👀 ¿Cómo se dice esto en inglés?</div><div class="scene">'+t.e+'</div>';}
+ h+='<div class="opts" id="qOpts"></div><div class="msg" id="qMsg"></div>';
+ qBox.innerHTML=h;
+ var qo=document.getElementById('qOpts'),locked=false;
+ if(listen){var hb=document.getElementById('qHear');hb.addEventListener('click',function(){say(t.w);});setTimeout(function(){say(t.w);},300);}
+ opts.forEach(function(o){
+  var b=document.createElement('button');b.className='opt';b.textContent=listen?o.e:o.w;
+  if(listen)b.style.fontSize='52px';
+  b.addEventListener('click',function(){
+   if(locked)return;
+   if(o.w===t.w){
+    locked=true;b.classList.add('ok');qs++;
+    document.getElementById('qMsg').textContent='✅ ¡Correcto! '+t.w+' = '+t.es;
+    document.getElementById('qScore').textContent='⭐ '+qs;
+    say(t.w);confetti(10);qi++;
+    document.getElementById('qBar').style.width=(qi/10*100)+'%';
+    setTimeout(qRender,1700);
+   }else{
+    b.classList.add('no');b.disabled=true;
+    document.getElementById('qMsg').textContent='💭 Casi. ¡Prueba con otra!';
+    b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+   }
+  });
+  qo.appendChild(b);
+ });
+}
+qRender();
+
+/* Memoria */
+var mm=document.getElementById('mem'),mFirst=null,mLock=false,mMoves=0,mPairs=0;
+function mInfo(){document.getElementById('mMsg').textContent='Movimientos: '+mMoves+' · Parejas: '+mPairs+' de '+W.length;}
+function mStart(){
+ mm.innerHTML='';mFirst=null;mLock=false;mMoves=0;mPairs=0;mInfo();
+ var cards=[];
+ W.forEach(function(x){cards.push({k:x.w,t:'e',l:x.e});cards.push({k:x.w,t:'w',l:x.w});});
+ shuffle(cards).forEach(function(c){
+  var b=document.createElement('button');b.className='mc';b.type='button';b.setAttribute('aria-label','Tarjeta de memoria');
+  b.innerHTML='<div class="mi"><div class="mb">❓</div><div class="mf'+(c.t==='e'?' em':'')+'">'+c.l+'</div></div>';
+  b.addEventListener('click',function(){
+   if(mLock||b.classList.contains('f'))return;
+   b.classList.add('f');say(c.k);
+   if(!mFirst){mFirst={b:b,c:c};return;}
+   var a=mFirst;mFirst=null;mMoves++;
+   if(a.c.k===c.k){
+    a.b.classList.add('m');b.classList.add('m');mPairs++;mInfo();confetti(8);
+    if(mPairs===W.length){
+     document.getElementById('mMsg').textContent='🎉 ¡Ganaste! Lo lograste en '+mMoves+' movimientos';
+     confetti(50);setTimeout(function(){say('Great job!');},900);
+    }
+   }else{
+    mLock=true;mInfo();
+    setTimeout(function(){a.b.classList.remove('f');b.classList.remove('f');mLock=false;},1100);
+   }
+  });
+  mm.appendChild(b);
+ });
+}
+document.getElementById('mRestart').addEventListener('click',mStart);
+mStart();
+
+/* Prueba */
+var tl=document.getElementById('tList'),tdone=0;
+function tUpdate(){
+ document.getElementById('tCount').textContent=tdone+' de '+S.length;
+ document.getElementById('tBar').style.width=(tdone/S.length*100)+'%';
+ var rubs=document.querySelectorAll('.rub'),ok=true;
+ for(var i=0;i<rubs.length;i++){if(!rubs[i].checked)ok=false;}
+ var cert=document.getElementById('cert'),was=cert.classList.contains('on');
+ var all=ok&&tdone===S.length;
+ cert.classList.toggle('on',all);
+ if(all&&!was){confetti(60);setTimeout(function(){say('Great job! You are a weather star!');},500);}
+}
+S.forEach(function(s,i){
+ var d=document.createElement('div');d.className='t';
+ var tx=sent(s);
+ d.innerHTML='<div class="em">'+s.e+'</div><div style="flex:1;min-width:150px"><b>Imagen '+(i+1)+'</b><div class="hint" style="display:none;margin:6px 0 0"></div></div>';
+ var c=d.children[1],hint=c.querySelector('.hint');
+ hint.innerHTML='Dilo así: <span class="en" data-say="'+tx+'">'+tx+'</span>';
+ function mk(txt,cls,fn){var b=document.createElement('button');b.className='say '+(cls||'');b.textContent=txt;b.addEventListener('click',fn);return b;}
+ var r=document.createElement('div');r.className='row';r.style.justifyContent='flex-start';
+ r.appendChild(mk('🔊 Modelo','',function(){say(tx);}));
+ r.appendChild(mk('🐢 Lento','slow',function(){say(tx,0.55);}));
+ r.appendChild(mk('💡 Pista','slow',function(){hint.style.display='block';}));
+ var done=false;
+ var ok=mk('🎤 ¡Lo dije!','',function(){
+  done=!done;d.classList.toggle('done',done);ok.textContent=done?'✅ ¡Listo!':'🎤 ¡Lo dije!';
+  tdone+=done?1:-1;if(done)confetti(8);tUpdate();
+ });
+ r.appendChild(ok);c.appendChild(r);tl.appendChild(d);
+});
+var rubs=document.querySelectorAll('.rub');
+for(var k=0;k<rubs.length;k++){rubs[k].addEventListener('change',tUpdate);}
+tUpdate();
+})();
+</script>
+</body>
+</html>
